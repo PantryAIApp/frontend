@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "d9bd963e-0a6a-4214-a8b6-4daf920a70d3"
+      }
+    },
+    "owner": "pantry-ai"
   }
 }
