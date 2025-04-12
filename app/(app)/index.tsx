@@ -4,6 +4,9 @@ import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Center } from "@/components/ui/center"
+import { Text } from "@/components/ui/text"
+import React from 'react';
 
 export default function HomeScreen() {
   return (
@@ -49,6 +52,9 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
           <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
+        <Center className="bg-primary-500 h-[200px] w-[300px]">
+          <Text className="text-typography-0 font-bold">This is the center.</Text>
+        </Center>
       </ThemedView>
     </ParallaxScrollView>
   );
