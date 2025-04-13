@@ -1,4 +1,6 @@
+import AuthPage from "@/components/authpage";
 import { View, Text, StyleSheet } from "react-native";
+import { router } from "expo-router";
 
 
 
@@ -6,10 +8,8 @@ export default function SignUp() {
 
 
     return (
-        <View style={styles.container}>
-            <Text className="text-typography-0 font-bold">Sign Up</Text>
-        </View>
-    )
+        AuthPage({ signIn: false, router })
+    );
 }
 
 const styles = StyleSheet.create({
