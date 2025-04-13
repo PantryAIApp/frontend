@@ -4,7 +4,7 @@ export default () => ({
     slug: "pantry-ai",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/icon.png",
+    icon: "./assets/images/new_icon.png",
     scheme: "myapp",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
@@ -15,16 +15,14 @@ export default () => ({
     },
     ios: {
       infoPlist: {
-        NSCameraUsageDescription: "This app requires access to the camera.",
-        NSMicrophoneUsageDescription: "This app requires access to the microphone."
+        NSCameraUsageDescription: "This app requires access to the camera."
       },
       supportsTablet: true,
       bundleIdentifier: "com.pantryai.app",
     },
     android: {
       permissions: [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.CAMERA"
       ],
       package: "com.pantryai.app",
     },
@@ -39,9 +37,7 @@ export default () => ({
       [
         "expo-camera",
         {
-          cameraPermission: "Allow $(PRODUCT_NAME) to access your camera",
-          microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone",
-          recordAudioAndroid: true
+          cameraPermission: "Allow $(PRODUCT_NAME) to access your camera"
         }
       ]
     ],
