@@ -12,6 +12,7 @@ import { StyleSheet } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import axios, { AxiosError } from "axios";
 import * as ImagePicker from 'expo-image-picker';
+import { GestureHandlerRootView, PinchGestureHandler, PinchGestureHandlerGestureEvent, State } from "react-native-gesture-handler";
 
 const auth = getAuth();
 
@@ -24,9 +25,29 @@ export default function Camera() {
 
     const opacity = useSharedValue(0);
 
+    // Add state for zoom level
+    const [zoom, setZoom] = useState(0);
+    const baseZoom = useSharedValue(0);
+    const scale = useSharedValue(1);
+
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
     }));
+
+    // Handle pinch gesture for zoom
+    const onPinchGestureEvent = (event: PinchGestureHandlerGestureEvent) => {
+        // Calculate new zoom based on pinch scale
+        // Clamp zoom between 0 and 1
+        const newZoom = Math.min(Math.max(baseZoom.value * event.nativeEvent.scale, 0), 1);
+        setZoom(newZoom);
+    };
+
+    const onPinchHandlerStateChange = (event: PinchGestureHandlerGestureEvent) => {
+        // When pinch ends, update the base zoom value for the next pinch
+        if (event.nativeEvent.state === State.END) {
+            baseZoom.value = zoom;
+        }
+    };
 
     const triggerShutter = () => {
         // This sequence fades out then fades in once
@@ -167,32 +188,39 @@ export default function Camera() {
     }
     //style={[styles.container, animatedStyle]}
     return (
-        <View className='flex-1 justify-center'>
-            <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
-                <View style={styles.bottomBar}>
-                    <TouchableOpacity onPress={toggleCameraFacing} className='align-items-center'>
-                        <Ionicons name="camera-reverse-outline" size={50} color="white" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={takePhoto}
-                        className='align-items-center'
-                    >
-                        <Ionicons
-                            name={"radio-button-on-outline"}
-                            size={50}
-                            color={"white"}
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity className='align-items-center' onPress={selectImage}>
-                        <Ionicons name="document-outline" size={50} color="white" />
-                    </TouchableOpacity>
-                </View>
-            </CameraView>
-            {/* The flash overlay */}
-            <Animated.View style={[StyleSheet.absoluteFill, animatedStyle, { backgroundColor: 'white' }]} pointerEvents="none" />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <View className='flex-1 justify-center'>
+                <PinchGestureHandler
+                    onGestureEvent={onPinchGestureEvent}
+                    onHandlerStateChange={onPinchHandlerStateChange}
+                >
+                    <CameraView ref={cameraRef} style={styles.camera} facing={facing} zoom={zoom}>
+                        <View style={styles.bottomBar}>
+                            <TouchableOpacity onPress={toggleCameraFacing} className='align-items-center'>
+                                <Ionicons name="camera-reverse-outline" size={50} color="white" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={takePhoto}
+                                className='align-items-center'
+                            >
+                                <Ionicons
+                                    name={"radio-button-on-outline"}
+                                    size={50}
+                                    color={"white"}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity className='align-items-center' onPress={selectImage}>
+                                <Ionicons name="document-outline" size={50} color="white" />
+                            </TouchableOpacity>
+                        </View>
+                    </CameraView>
+                </PinchGestureHandler>
+                {/* The flash overlay */}
+                <Animated.View style={[StyleSheet.absoluteFill, animatedStyle, { backgroundColor: 'white' }]} pointerEvents="none" />
 
-            <Loader visible={loading} />
-        </View>
+                <Loader visible={loading} />
+            </View>
+        </GestureHandlerRootView>
     );
 }
 
