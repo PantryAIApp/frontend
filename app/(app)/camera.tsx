@@ -10,12 +10,15 @@ import { useRef, useState } from "react";
 import { Text } from "@/components/ui/text";
 import { StyleSheet } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
+import axios from "axios";
 
 const auth = getAuth();
 
 export default function Camera() {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
+    const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+    const cameraRef = useRef<CameraView>(null);
 
     const opacity = useSharedValue(1);
 
@@ -33,6 +36,40 @@ export default function Camera() {
 
     const takePhoto = async () => {
         triggerShutter();
+        const picture = await cameraRef.current?.takePictureAsync();
+        if (!auth.currentUser) {
+            alert("Please sign in again to use this feature.");
+            return;
+        }
+        if (!picture) {
+            alert("Error with picture taking. Please try again.");
+            return;
+        }
+        const formData = new FormData();
+        formData.append('image', {
+            uri: picture.uri,
+            name: 'photo.jpg',
+            type: 'image/jpeg',
+        } as any);
+        console.log(await auth.currentUser.getIdToken());
+
+        axios.post(`${apiUrl}/extract-ingredients`, formData, {
+            headers: {
+                Authorization: `Bearer ${await auth.currentUser.getIdToken()}`,
+                'Content-Type': 'multipart/form-data',
+            }
+        }).then(res => {
+            if (res.data.ingredients.length == 0) {
+                alert("No ingredients found in image. Please try again.");
+                return;
+            }
+            // go to next screen
+            console.log("Success!", res.data.ingredients);
+        })
+            .catch(err => {
+                alert("Server error: " + err.message + ". Please try again.");
+                console.log(err);
+            });
     };
 
     if (!permission) {
@@ -55,7 +92,7 @@ export default function Camera() {
     //style={[styles.container, animatedStyle]}
     return (
         <Animated.View className='flex-1 justify-center' style={animatedStyle}>
-            <CameraView style={styles.camera} facing={facing}>
+            <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
                 <View style={styles.bottomBar}>
                     <TouchableOpacity onPress={toggleCameraFacing} className='align-items-center'>
                         <Ionicons name="camera-reverse-outline" size={50} color="white" />
