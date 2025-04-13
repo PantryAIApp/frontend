@@ -38,6 +38,9 @@ export default function AuthPage({ signIn, router }: { signIn: boolean, router: 
 
     const validatePassword = (text: string) => {
         setPassword(text);
+        if (signIn) {
+            return;
+        }
         setPasswordError(text.length >= 8 ? '' : 'Password must be at least 8 characters');
     };
 
