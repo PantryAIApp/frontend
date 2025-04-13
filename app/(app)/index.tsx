@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -7,6 +7,9 @@ import { ThemedView } from '@/components/ThemedView';
 import { Center } from "@/components/ui/center"
 import { Text } from "@/components/ui/text"
 import React from 'react';
+import { getAuth, signOut } from 'firebase/auth';
+
+const auth = getAuth();
 
 export default function HomeScreen() {
   return (
@@ -20,6 +23,7 @@ export default function HomeScreen() {
       }>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>
+        <TouchableOpacity onPress={() => signOut(auth)}><Text>xHello!</Text></TouchableOpacity>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
