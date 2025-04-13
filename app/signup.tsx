@@ -5,18 +5,5 @@ import { router } from "expo-router";
 
 
 export default function SignUp() {
-
-
-    return (
-        AuthPage({ signIn: false, router })
-    );
+    return <AuthPage signIn={false} router={router} />
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-    },
-});

@@ -20,5 +20,5 @@ import { router } from 'expo-router';
 import AuthPage from '@/components/authpage';
 
 export default function SignIn() {
-    return (AuthPage({ signIn: true, router }));
+    return <AuthPage signIn={true} router={router} />;
 };
