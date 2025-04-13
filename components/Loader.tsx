@@ -1,28 +1,49 @@
-// Loader.tsx
-import React from "react";
-import { Modal, View, StyleSheet } from "react-native";
+// CustomLoader.tsx
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, Animated } from "react-native";
 import { Fold } from "react-native-animated-spinkit";
 
-export default function Loader({ visible }: { visible: boolean }) {
+export default function CustomLoader({ visible }: { visible: boolean }) {
+    const fadeAnim = React.useRef(new Animated.Value(0)).current;
+    const [renderLoader, setRenderLoader] = useState(visible);
+
+    useEffect(() => {
+        if (visible) {
+            setRenderLoader(true);
+        }
+
+        Animated.timing(fadeAnim, {
+            toValue: visible ? 1 : 0,
+            duration: 300,
+            useNativeDriver: true,
+        }).start(() => {
+            if (!visible) {
+                setRenderLoader(false);
+            }
+        });
+    }, [visible]);
+
+    if (!renderLoader) return null;
+
     return (
-        <Modal
-            transparent={true}
-            animationType="fade"
-            visible={visible}
-            onRequestClose={() => { }}
+        <Animated.View
+            style={[
+                StyleSheet.absoluteFill,
+                styles.container,
+                { opacity: fadeAnim }
+            ]}
+            pointerEvents={visible ? "auto" : "none"}
         >
-            <View style={styles.modalBackground}>
-                <Fold size={50} color="#0000ff" />
-            </View>
-        </Modal>
+            <Fold size={50} color="#0000ff" />
+        </Animated.View>
     );
 }
 
 const styles = StyleSheet.create({
-    modalBackground: {
-        flex: 1,
+    container: {
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.5)", // semi-transparent overlay
+        zIndex: 1000,
     },
 });

@@ -11,16 +11,18 @@ import { Text } from "@/components/ui/text";
 import { StyleSheet } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import axios from "axios";
+import * as ImagePicker from 'expo-image-picker';
 
 const auth = getAuth();
 
 export default function Camera() {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
+    const [loading, setLoading] = useState(false);
     const apiUrl = process.env.EXPO_PUBLIC_API_URL;
     const cameraRef = useRef<CameraView>(null);
 
-    const opacity = useSharedValue(1);
+    const opacity = useSharedValue(0);
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
@@ -29,10 +31,98 @@ export default function Camera() {
     const triggerShutter = () => {
         // This sequence fades out then fades in once
         opacity.value = withSequence(
-            withTiming(0, { duration: 200 }), // Fade to transparent quickly (simulate shutter flash)
-            withTiming(1, { duration: 200 })  // Fade back to opaque
+            withTiming(1, { duration: 200 }), // Fade to transparent quickly (simulate shutter flash)
+            withTiming(0, { duration: 200 })  // Fade back to opaque
         );
     };
+
+    const getIngredients = async (formData: FormData) => {
+        if (!auth.currentUser) {
+            alert("Please sign in again to use this feature.");
+            return;
+        }
+        console.log(await auth.currentUser.getIdToken());
+        setLoading(true);
+        axios.post(`${apiUrl}/extract-ingredients`, formData, {
+            headers: {
+                Authorization: `Bearer ${await auth.currentUser.getIdToken()}`,
+                'Content-Type': 'multipart/form-data',
+            }
+        }).then(res => {
+            if (res.data.ingredients.length == 0) {
+                alert("No ingredients found in image. Please try again.");
+                setLoading(false);
+                return;
+            }
+            // go to next screen
+            console.log("Success!", res.data.ingredients);
+            setLoading(false);
+        })
+            .catch(err => {
+                alert("Server error: " + err.message + ". Please try again.");
+                console.log(err);
+            })
+            .finally(() => {
+                setLoading(false);
+            })
+    };
+
+    const selectImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            aspect: [4, 3],
+            quality: 1,
+        });
+        if (result.canceled) {
+            return;
+        }
+        if (!auth.currentUser) {
+            alert("Please sign in again to use this feature.");
+            return;
+        }
+
+        // logic to support dif types of images:
+        // Get the first selected asset.
+        const asset = result.assets[0];
+        const uri = asset.uri;
+
+        // Extract the file name from the URI.
+        const fileName = uri.split('/').pop() || 'photo';
+
+        // Extract the file extension and normalize it.
+        const fileExtension = fileName.split('.').pop()?.toLowerCase() || '';
+
+        // Map the file extension to a MIME type.
+        let mimeType: string;
+        switch (fileExtension) {
+            case 'jpg':
+            case 'jpeg':
+                mimeType = 'image/jpeg';
+                break;
+            case 'png':
+                mimeType = 'image/png';
+                break;
+            case 'gif':
+                mimeType = 'image/gif';
+                break;
+            case 'heic':
+            case 'heif':
+                mimeType = 'image/heic';
+                break;
+            default:
+                // Fallback to a generic image type.
+                mimeType = `image/${fileExtension}`;
+        }
+
+        const formData = new FormData();
+        // images on android are all jpegs iirc
+        formData.append('image', {
+            uri: uri,
+            name: fileName,
+            type: mimeType,
+        } as any);
+        await getIngredients(formData);
+    }
 
     const takePhoto = async () => {
         triggerShutter();
@@ -52,24 +142,8 @@ export default function Camera() {
             type: 'image/jpeg',
         } as any);
         console.log(await auth.currentUser.getIdToken());
-
-        axios.post(`${apiUrl}/extract-ingredients`, formData, {
-            headers: {
-                Authorization: `Bearer ${await auth.currentUser.getIdToken()}`,
-                'Content-Type': 'multipart/form-data',
-            }
-        }).then(res => {
-            if (res.data.ingredients.length == 0) {
-                alert("No ingredients found in image. Please try again.");
-                return;
-            }
-            // go to next screen
-            console.log("Success!", res.data.ingredients);
-        })
-            .catch(err => {
-                alert("Server error: " + err.message + ". Please try again.");
-                console.log(err);
-            });
+        await setTimeout(() => { }, 450); // wait for animation to finish
+        await getIngredients(formData);
     };
 
     if (!permission) {
@@ -91,7 +165,7 @@ export default function Camera() {
     }
     //style={[styles.container, animatedStyle]}
     return (
-        <Animated.View className='flex-1 justify-center' style={animatedStyle}>
+        <View className='flex-1 justify-center'>
             <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
                 <View style={styles.bottomBar}>
                     <TouchableOpacity onPress={toggleCameraFacing} className='align-items-center'>
@@ -107,9 +181,16 @@ export default function Camera() {
                             color={"white"}
                         />
                     </TouchableOpacity>
+                    <TouchableOpacity className='align-items-center' onPress={selectImage}>
+                        <Ionicons name="document-outline" size={50} color="white" />
+                    </TouchableOpacity>
                 </View>
             </CameraView>
-        </Animated.View>
+            {/* The flash overlay */}
+            <Animated.View style={[StyleSheet.absoluteFill, animatedStyle, { backgroundColor: 'white' }]} pointerEvents="none" />
+
+            <Loader visible={loading} />
+        </View>
     );
 }
 
