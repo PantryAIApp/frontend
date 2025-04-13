@@ -31,20 +31,10 @@ const recipesExample = [
 ];
 
 const auth = getAuth();
-//          <TouchableOpacity onPress={() => signOut(auth)}><Text>xHello!</Text></TouchableOpacity>
+
 export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1">
-      {/* <Center className="flex-1">
-        <TouchableOpacity onPress={() => signOut(auth)}><Text>xHello!</Text></TouchableOpacity>
-        <Avatar size="md">
-          <AvatarFallbackText>Pantry AI</AvatarFallbackText>
-          <AvatarImage
-            source={require('@/assets/images/PantryAiProfilePic.png')}
-          />
-          <AvatarBadge /> 
-        </Avatar>
-      </Center> */}
       <VStack className="flex-1" space={"md"}>
         <HStack className="w-full" space={"md"} reversed={true}>
           <Menu
@@ -54,7 +44,6 @@ export default function HomeScreen() {
               return (
                 <TouchableOpacity {...triggerProps} className="flex-row items-center mr-5">
                   <Avatar size="md" className="">
-                    {/* <AvatarFallbackText>Pantry AI</AvatarFallbackText> */}
                     <AvatarImage
                       source={require('@/assets/images/new_icon.png')}
                     />
@@ -68,17 +57,9 @@ export default function HomeScreen() {
             </MenuItem>
           </Menu>
         </HStack>
-        {/* <Box className="w-full h-md">
-        </Box> */}
         <Center className='w-full'>
           <Heading size="2xl" className="text-center text-blue-600 font-bold">Recipes</Heading>
         </Center>
-
-        {/* <Center className='w-full'>
-          <Button size="md" variant="solid" action="primary">
-            <Text>Mine</Text>
-          </Button>
-        </Center> */}
         <ScrollView
           className="flex-1"
           contentContainerStyle={{
@@ -109,22 +90,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
