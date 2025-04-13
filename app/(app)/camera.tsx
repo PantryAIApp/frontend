@@ -26,8 +26,8 @@ export default function Camera() {
     const triggerShutter = () => {
         // This sequence fades out then fades in once
         opacity.value = withSequence(
-            withTiming(0, { duration: 300 }), // Fade to transparent quickly (simulate shutter flash)
-            withTiming(1, { duration: 300 })  // Fade back to opaque
+            withTiming(0, { duration: 200 }), // Fade to transparent quickly (simulate shutter flash)
+            withTiming(1, { duration: 200 })  // Fade back to opaque
         );
     };
 
