@@ -20,6 +20,7 @@ import { Fab, FabIcon, FabLabel } from '@/components/ui/fab';
 import { AddIcon } from "@/components/ui/icon";
 // import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated';
 import { ScrollView } from 'react-native';
+import { router } from 'expo-router';
 
 const recipesExample = [
   { id: 1, name: 'asd', ingredients: ['2 apples', '3 pomengrantes'], instructions: ['cut apples', 'slice pomegranites'], summary: 'This is a summary of Recipe 1' },
@@ -83,6 +84,7 @@ export default function HomeScreen() {
         isHovered={false}
         isDisabled={false}
         isPressed={false}
+        onPress={() => router.push('/camera')}
       >
         <FabIcon as={AddIcon} />
         <FabLabel>Add Recipe</FabLabel>
