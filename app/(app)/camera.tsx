@@ -10,7 +10,7 @@ import { useRef, useState } from "react";
 import { Text } from "@/components/ui/text";
 import { StyleSheet } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import * as ImagePicker from 'expo-image-picker';
 
 const auth = getAuth();
@@ -58,9 +58,10 @@ export default function Camera() {
             console.log("Success!", res.data.ingredients);
             setLoading(false);
         })
-            .catch(err => {
-                alert("Server error: " + err.message + ". Please try again.");
-                console.log(err);
+            .catch((err: AxiosError) => {
+                // alert("Server error: " + err.message + ". Please try again.");
+                alert("There doesn't appear to be any food here");
+                console.log(err.cause, err.message, err.response?.data);
             })
             .finally(() => {
                 setLoading(false);
@@ -116,6 +117,7 @@ export default function Camera() {
 
         const formData = new FormData();
         // images on android are all jpegs iirc
+        console.log(fileName, mimeType, uri);
         formData.append('image', {
             uri: uri,
             name: fileName,
