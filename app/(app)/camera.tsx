@@ -9,12 +9,14 @@ import { router, useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { Text } from "@/components/ui/text";
 import { StyleSheet } from "react-native";
-import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedProps, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import axios, { AxiosError } from "axios";
 import * as ImagePicker from 'expo-image-picker';
-import { GestureHandlerRootView, PinchGestureHandler, PinchGestureHandlerGestureEvent, State } from "react-native-gesture-handler";
+import { GestureHandlerRootView, PinchGestureHandler, PinchGestureHandlerGestureEvent, State, TapGestureHandler } from "react-native-gesture-handler";
 
 const auth = getAuth();
+
+const AnimatedCameraView = Animated.createAnimatedComponent(CameraView);
 
 export default function Camera() {
     const [facing, setFacing] = useState<CameraType>('back');
@@ -25,33 +27,32 @@ export default function Camera() {
 
     const opacity = useSharedValue(0);
 
-    // Initialize zoom state
-    const [zoom, setZoom] = useState(0);
-    // Track the base zoom level between pinch gestures
-    const baseZoom = useRef(0);
+
+    // Using shared values for smooth native updates.
+    const zoomShared = useSharedValue(0);
+    const baseZoom = useSharedValue(0);
+
+    const animatedCameraProps = useAnimatedProps(() => ({
+        zoom: zoomShared.value,
+    }));
+
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
     }));
 
-    // Handle pinch gesture for zoom
-    // Handle pinch gesture for zoom
+    // Update zoom as the pinch gesture updates.
     const onPinchGestureEvent = (event: PinchGestureHandlerGestureEvent) => {
         const { scale } = event.nativeEvent;
-        // Adjust zoom by adding the delta and then clamp between 0 and 1
-        const newZoom = Math.min(Math.max(baseZoom.current + (scale - 1), 0), 1);
-        setZoom(newZoom);
+        let newZoom = baseZoom.value + (scale - 1);
+        newZoom = Math.min(Math.max(newZoom, 0), 1);
+        zoomShared.value = newZoom;
     };
 
     const onPinchHandlerStateChange = (event: PinchGestureHandlerGestureEvent) => {
         const { state } = event.nativeEvent;
-        // When the pinch gesture begins, record the current zoom level
         if (state === State.BEGAN) {
-            baseZoom.current = zoom;
-        }
-        // Optionally, when the gesture ends, you can update baseZoom if needed
-        if (state === State.END) {
-            baseZoom.current = zoom;
+            baseZoom.value = zoomShared.value;
         }
     };
 
@@ -64,6 +65,7 @@ export default function Camera() {
     };
 
     const getIngredients = async (formData: FormData) => {
+        console.log('getting ingredients...');
         if (!auth.currentUser) {
             alert("Please sign in again to use this feature.");
             return;
@@ -192,40 +194,39 @@ export default function Camera() {
     function toggleCameraFacing() {
         setFacing(current => (current === 'back' ? 'front' : 'back'));
     }
+
+
     //style={[styles.container, animatedStyle]}
     return (
         <View className='flex-1 justify-center'>
+            <AnimatedCameraView
+                ref={cameraRef}
+                style={styles.camera}
+                facing={facing}
+                animatedProps={animatedCameraProps}
+            />
             <PinchGestureHandler
                 onGestureEvent={onPinchGestureEvent}
                 onHandlerStateChange={onPinchHandlerStateChange}
             >
-                <CameraView ref={cameraRef} style={styles.camera} facing={facing} zoom={zoom}>
-                    <View style={styles.bottomBar}>
-                        <TouchableOpacity onPress={toggleCameraFacing} className='align-items-center'>
-                            <Ionicons name="camera-reverse-outline" size={50} color="white" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={takePhoto}
-                            className='align-items-center'
-                        >
-                            <Ionicons
-                                name={"radio-button-on-outline"}
-                                size={50}
-                                color={"white"}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity className='align-items-center' onPress={selectImage}>
-                            <Ionicons name="document-outline" size={50} color="white" />
-                        </TouchableOpacity>
-                    </View>
-                </CameraView>
+                <Animated.View style={[StyleSheet.absoluteFill, { bottom: 100 }]} />
             </PinchGestureHandler>
-            {/* The flash overlay */}
+            <View style={styles.bottomBar}>
+                <TouchableOpacity onPress={toggleCameraFacing} className='align-items-center'>
+                    <Ionicons name="camera-reverse-outline" size={50} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={takePhoto} className='align-items-center'>
+                    <Ionicons name={"radio-button-on-outline"} size={50} color={"white"} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={selectImage} className='align-items-center'>
+                    <Ionicons name="document-outline" size={50} color="white" />
+                </TouchableOpacity>
+            </View>
             <Animated.View style={[StyleSheet.absoluteFill, animatedStyle, { backgroundColor: 'white' }]} pointerEvents="none" />
-
             <Loader visible={loading} />
         </View>
     );
+
 }
 
 
