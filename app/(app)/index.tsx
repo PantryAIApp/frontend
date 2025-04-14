@@ -26,6 +26,7 @@ import { RefreshType } from '@/contexts/refresh_context';
 
 import * as jotaistates from '@/contexts/jotaistates';
 import { useAtom } from 'jotai';
+import Loader from '@/components/Loader';
 
 
 interface RecipeToView {
@@ -53,6 +54,7 @@ const citiesRef = collection(db, "recipes");
 export default function HomeScreen() {
   const [recipes, setRecipes] = React.useState<RecipeToView[]>([]);
   const [darkMode, setDarkMode] = useAtom(jotaistates.darkModeAtom);
+  const [loading, setLoading] = React.useState(true);
   // const { refresh } = params as { refresh: string | null };
 
   const refreshContext = useContext(RefreshType);
@@ -65,11 +67,13 @@ export default function HomeScreen() {
       console.log("Current user not signed in");
       return;
     }
+    setLoading(true);
     const q = query(citiesRef, where("user", "==", auth.currentUser?.uid));
     const querySnapshot = await getDocs(q);
     const recipesArray: RecipeToView[] = [];
     if (auth.currentUser == null || auth.currentUser == undefined) {
       console.log("Current user not signed in");
+      setLoading(false);
       return;
     }
     console.log("working to get queries");
@@ -84,6 +88,7 @@ export default function HomeScreen() {
     });
     console.log(recipesArray);
     setRecipes(recipesArray);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -133,7 +138,7 @@ export default function HomeScreen() {
             paddingBottom: 100,
           }}
           showsVerticalScrollIndicator={false}>
-          {recipes.length > 0 ? recipes.map((recipe) => (
+          {recipes.length > 0 || loading ? recipes.map((recipe) => (
             <TouchableOpacity key={recipe.id} onPress={() => router.push({ pathname: '/recipepage', params: { recipeId: recipe.id } })}>
               <Box className="w-full bg-white rounded-lg shadow-md p-4 mb-4">
                 <VStack space="md" className="mb-8">
@@ -161,6 +166,7 @@ export default function HomeScreen() {
         <FabIcon as={AddIcon} />
         <FabLabel>Add Recipe</FabLabel>
       </Fab>
+      <Loader visible={loading} />
     </SafeAreaView>
   );
 }
