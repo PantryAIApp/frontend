@@ -23,7 +23,7 @@ export default function Ingredients() {
 
   const handleAddIngredient = () => {
     if (newIngredient.trim()) {
-      setIngredientList(prev => [...prev, newIngredient.trim()]);
+      setIngredientList(prev => [newIngredient.trim(), ...prev]);
       setNewIngredient('');
     }
   };
@@ -39,14 +39,13 @@ export default function Ingredients() {
 
   return (
     <VStack className="flex-1 bg-background">
-      <Center className="w-full my-4 relative">
+      <Center className="w-full mt-8 mb-4 relative">
         <Heading size="2xl" className="text-blue-600 font-bold">
           Ingredients
         </Heading>
 
         {/* Top-right blue text link */}
         <TouchableOpacity
-          className="absolute right-4 top-0"
           onPress={() =>
             Linking.openURL('https://www.google.com/maps/search/grocery+store+near+me')
           }
@@ -63,6 +62,22 @@ export default function Ingredients() {
         }}
         showsVerticalScrollIndicator={false}
       >
+        {/* Input field and Add button in the same row */}
+        <View className="flex-row w-full items-center gap-2 mb-4">
+          <TextInput
+            value={newIngredient}
+            onChangeText={setNewIngredient}
+            placeholder="Enter ingredient name"
+            className="flex-1 border border-gray-300 rounded-md px-4 py-2 bg-white"
+          />
+
+          <TouchableOpacity
+            onPress={handleAddIngredient}
+            className="bg-blue-600 px-6 py-2 rounded-md min-w-[90px] items-center"
+          >
+            <Text className="text-white font-semibold">Add</Text>
+          </TouchableOpacity>
+        </View>
         {ingredientList.length > 0 ? (
           ingredientList.map((item, index) => (
             <Box
@@ -86,32 +101,15 @@ export default function Ingredients() {
         ) : (
           <Text className="text-center text-gray-500 mb-4">No ingredients found.</Text>
         )}
-
-        {/* Input field and Add button in the same row */}
-        <View className="flex-row w-full items-center gap-2 mt-4">
-          <TextInput
-            value={newIngredient}
-            onChangeText={setNewIngredient}
-            placeholder="Enter ingredient name"
-            className="flex-1 border border-gray-300 rounded-md px-4 py-2 bg-white"
-          />
-
-          <TouchableOpacity
-            onPress={handleAddIngredient}
-            className="bg-blue-600 px-6 py-2 rounded-md min-w-[90px] items-center"
-          >
-            <Text className="text-white font-semibold">Add</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
 
       {/* Floating Confirm Button */}
       <TouchableOpacity
-  onPress={handleConfirm}
-  className="absolute bottom-6 right-6 bg-black px-6 py-4 rounded-full shadow-lg"
->
-  <Text className="text-white font-semibold">Confirm Ingredients</Text>
-</TouchableOpacity>
+        onPress={handleConfirm}
+        className="absolute bottom-6 right-6 bg-black px-6 py-4 rounded-full shadow-lg"
+      >
+        <Text className="text-white font-semibold">Confirm Ingredients</Text>
+      </TouchableOpacity>
 
     </VStack>
   );
