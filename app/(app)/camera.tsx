@@ -86,6 +86,13 @@ export default function Camera() {
             // go to next screen
             console.log("Success!", res.data.ingredients);
             setLoading(false);
+            // route to new page
+            router.push({
+                pathname: "/ingredients",
+                params: {
+                ingredients: JSON.stringify(res.data.ingredients),
+                },
+            });
         })
             .catch((err: AxiosError) => {
                 // alert("Server error: " + err.message + ". Please try again.");
