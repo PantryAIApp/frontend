@@ -3,7 +3,7 @@ export default () => ({
     name: "Pantry AI",
     slug: "pantry-ai",
     version: "1.0.0",
-    orientation: "portrait",
+    orientation: "default",
     icon: "./assets/images/new_icon.png",
     scheme: "myapp",
     userInterfaceStyle: "automatic",
