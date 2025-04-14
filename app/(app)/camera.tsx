@@ -25,27 +25,33 @@ export default function Camera() {
 
     const opacity = useSharedValue(0);
 
-    // Add state for zoom level
+    // Initialize zoom state
     const [zoom, setZoom] = useState(0);
-    const baseZoom = useSharedValue(0);
-    const scale = useSharedValue(1);
+    // Track the base zoom level between pinch gestures
+    const baseZoom = useRef(0);
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
     }));
 
     // Handle pinch gesture for zoom
+    // Handle pinch gesture for zoom
     const onPinchGestureEvent = (event: PinchGestureHandlerGestureEvent) => {
-        // Calculate new zoom based on pinch scale
-        // Clamp zoom between 0 and 1
-        const newZoom = Math.min(Math.max(baseZoom.value * event.nativeEvent.scale, 0), 1);
+        const { scale } = event.nativeEvent;
+        // Adjust zoom by adding the delta and then clamp between 0 and 1
+        const newZoom = Math.min(Math.max(baseZoom.current + (scale - 1), 0), 1);
         setZoom(newZoom);
     };
 
     const onPinchHandlerStateChange = (event: PinchGestureHandlerGestureEvent) => {
-        // When pinch ends, update the base zoom value for the next pinch
-        if (event.nativeEvent.state === State.END) {
-            baseZoom.value = zoom;
+        const { state } = event.nativeEvent;
+        // When the pinch gesture begins, record the current zoom level
+        if (state === State.BEGAN) {
+            baseZoom.current = zoom;
+        }
+        // Optionally, when the gesture ends, you can update baseZoom if needed
+        if (state === State.END) {
+            baseZoom.current = zoom;
         }
     };
 
@@ -188,39 +194,37 @@ export default function Camera() {
     }
     //style={[styles.container, animatedStyle]}
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-            <View className='flex-1 justify-center'>
-                <PinchGestureHandler
-                    onGestureEvent={onPinchGestureEvent}
-                    onHandlerStateChange={onPinchHandlerStateChange}
-                >
-                    <CameraView ref={cameraRef} style={styles.camera} facing={facing} zoom={zoom}>
-                        <View style={styles.bottomBar}>
-                            <TouchableOpacity onPress={toggleCameraFacing} className='align-items-center'>
-                                <Ionicons name="camera-reverse-outline" size={50} color="white" />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={takePhoto}
-                                className='align-items-center'
-                            >
-                                <Ionicons
-                                    name={"radio-button-on-outline"}
-                                    size={50}
-                                    color={"white"}
-                                />
-                            </TouchableOpacity>
-                            <TouchableOpacity className='align-items-center' onPress={selectImage}>
-                                <Ionicons name="document-outline" size={50} color="white" />
-                            </TouchableOpacity>
-                        </View>
-                    </CameraView>
-                </PinchGestureHandler>
-                {/* The flash overlay */}
-                <Animated.View style={[StyleSheet.absoluteFill, animatedStyle, { backgroundColor: 'white' }]} pointerEvents="none" />
+        <View className='flex-1 justify-center'>
+            <PinchGestureHandler
+                onGestureEvent={onPinchGestureEvent}
+                onHandlerStateChange={onPinchHandlerStateChange}
+            >
+                <CameraView ref={cameraRef} style={styles.camera} facing={facing} zoom={zoom}>
+                    <View style={styles.bottomBar}>
+                        <TouchableOpacity onPress={toggleCameraFacing} className='align-items-center'>
+                            <Ionicons name="camera-reverse-outline" size={50} color="white" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={takePhoto}
+                            className='align-items-center'
+                        >
+                            <Ionicons
+                                name={"radio-button-on-outline"}
+                                size={50}
+                                color={"white"}
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity className='align-items-center' onPress={selectImage}>
+                            <Ionicons name="document-outline" size={50} color="white" />
+                        </TouchableOpacity>
+                    </View>
+                </CameraView>
+            </PinchGestureHandler>
+            {/* The flash overlay */}
+            <Animated.View style={[StyleSheet.absoluteFill, animatedStyle, { backgroundColor: 'white' }]} pointerEvents="none" />
 
-                <Loader visible={loading} />
-            </View>
-        </GestureHandlerRootView>
+            <Loader visible={loading} />
+        </View>
     );
 }
 
