@@ -108,6 +108,10 @@ export default function Camera() {
             return;
         }
         console.log("Recipe saved to database!", out, out.id);
+        router.push({
+            pathname: '/recipepage',
+            params: { recipeId: out.id },
+        });
         // go to next screen
         // router.push({
         //     pathname: '/recipe',
