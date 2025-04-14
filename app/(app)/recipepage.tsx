@@ -1,6 +1,6 @@
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FlatList, SafeAreaView, ScrollView, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/ui/text";
 import CustomLoader from "@/components/Loader";
@@ -12,6 +12,7 @@ import { Heading } from "@/components/ui/heading";
 import { ArrowLeftIcon } from "@/components/ui/icon";
 import { Fab, FabIcon, FabLabel } from "@/components/ui/fab";
 import { HomeIcon } from "lucide-react-native";
+import { RefreshType } from "@/contexts/refresh_context";
 
 const db = getFirestore();
 
@@ -23,6 +24,13 @@ export default function RecipePage() {
     const [summary, setSummary] = useState<string>(""); // may not be needed
     const [name, setName] = useState<string>(""); // may not be needed
     const [loading, setLoading] = useState(true);
+
+    const refreshContext = useContext(RefreshType);
+    if (!refreshContext) throw new Error("RefreshContext must be used within a RefreshProvider");
+
+    const { refresh, setRefresh } = refreshContext;
+
+
     useEffect(() => {
         // Clear previous data when loading a new recipe
         setIngredients([]);
@@ -85,7 +93,9 @@ export default function RecipePage() {
                     isPressed={false}
                     onPress={() => {
                         // router.replace('/(app)');
+                        setRefresh(Date.now().toString());
                         router.dismissAll();
+                        // router.push({ pathname: '/(app)', params: { refresh: Date.now().toString() } });
                     }}
                 >
                     <FabIcon as={HomeIcon} />

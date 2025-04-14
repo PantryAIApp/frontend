@@ -6,7 +6,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Center } from "@/components/ui/center"
 import { Text } from "@/components/ui/text"
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, AvatarBadge, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
@@ -20,7 +20,20 @@ import { Fab, FabIcon, FabLabel } from '@/components/ui/fab';
 import { AddIcon } from "@/components/ui/icon";
 // import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated';
 import { ScrollView } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { collection, getDocs, getFirestore, query, where } from 'firebase/firestore';
+import { RefreshType } from '@/contexts/refresh_context';
+
+import * as jotaistates from '@/contexts/jotaistates';
+import { useAtom } from 'jotai';
+
+
+interface RecipeToView {
+  id: string,
+  name: string,
+  summary: string,
+  user: string
+};
 
 const recipesExample = [
   { id: 1, name: 'asd', ingredients: ['2 apples', '3 pomengrantes'], instructions: ['cut apples', 'slice pomegranites'], summary: 'This is a summary of Recipe 1' },
@@ -31,11 +44,58 @@ const recipesExample = [
   { id: 6, name: 'Chocolate Chip Cookies', ingredients: ['2 cups flour', '1 cup chocolate chips'], instructions: ['mix ingredients', 'bake at 350°F for 10 minutes'], summary: 'Chocolate Chip Cookies are a classic American treat, made with a dough that includes chocolate chips, baked until golden brown.' },
 ];
 
+
+// maybe can save uid after caching in the onAuthStateChanged and then we have local storage!!
 const auth = getAuth();
+const db = getFirestore();
+const citiesRef = collection(db, "recipes");
 
 export default function HomeScreen() {
+  const [recipes, setRecipes] = React.useState<RecipeToView[]>([]);
+  const [darkMode, setDarkMode] = useAtom(jotaistates.darkModeAtom);
+  // const { refresh } = params as { refresh: string | null };
+
+  const refreshContext = useContext(RefreshType);
+  if (!refreshContext) throw new Error("RefreshContext must be used within a RefreshProvider");
+
+  const { refresh, setRefresh } = refreshContext;
+
+  const getRecipes = async () => {
+    if (!auth.currentUser) {
+      console.log("Current user not signed in");
+      return;
+    }
+    const q = query(citiesRef, where("user", "==", auth.currentUser?.uid));
+    const querySnapshot = await getDocs(q);
+    const recipesArray: RecipeToView[] = [];
+    if (auth.currentUser == null || auth.currentUser == undefined) {
+      console.log("Current user not signed in");
+      return;
+    }
+    console.log("working to get queries");
+    querySnapshot.forEach((doc) => {
+      console.log(doc.id, " => ", doc.data());
+      recipesArray.push({
+        user: auth.currentUser!.uid,
+        id: doc.id,
+        name: doc.data().name || 'Recipe Details',
+        summary: doc.data().summary || "",
+      });
+    });
+    console.log(recipesArray);
+    setRecipes(recipesArray);
+  };
+
+  useEffect(() => {
+    getRecipes();
+  }, []);
+
+  useEffect(() => {
+    getRecipes();
+  }, [refresh]);
+
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1" key={refresh ?? 'default_main_key'}>
       <VStack className="flex-1" space={"md"}>
         <HStack className="w-full" space={"md"} reversed={true}>
           <Menu
@@ -56,6 +116,12 @@ export default function HomeScreen() {
             <MenuItem key="Sign out" textValue="Sign out" onPress={() => signOut(auth)}>
               <MenuItemLabel size="sm">Sign out</MenuItemLabel>
             </MenuItem>
+            <MenuItem key="Change theme" textValue="Change theme" onPress={() => {
+              setDarkMode(!darkMode);
+              console.log(darkMode, ' is dark mode');
+            }}>
+              <MenuItemLabel size="sm">Change theme</MenuItemLabel>
+            </MenuItem>
           </Menu>
         </HStack>
         <Center className='w-full'>
@@ -67,15 +133,21 @@ export default function HomeScreen() {
             paddingBottom: 100,
           }}
           showsVerticalScrollIndicator={false}>
-          {recipesExample.map((recipe) => (
-            <Box key={recipe.id} className="w-full bg-white rounded-lg shadow-md p-4 mb-4">
-              <VStack space="md" className="mb-8">
-                <Text className="text-lg font-bold">{recipe.name}</Text>
-                <Text className="text-gray-600">Summary:</Text>
-                <Text className="text-gray-800">{recipe.summary}</Text>
-              </VStack>
-            </Box>
-          ))}
+          {recipes.length > 0 ? recipes.map((recipe) => (
+            <TouchableOpacity key={recipe.id} onPress={() => router.push({ pathname: '/recipepage', params: { recipeId: recipe.id } })}>
+              <Box className="w-full bg-white rounded-lg shadow-md p-4 mb-4">
+                <VStack space="md" className="mb-8">
+                  <Text className="text-lg font-bold">{recipe.name}</Text>
+                  <Text className="text-gray-600">Summary:</Text>
+                  <Text className="text-gray-800">{recipe.summary}</Text>
+                </VStack>
+              </Box>
+            </TouchableOpacity>
+          )) : (
+            <Center>
+              <Text>Add a recipe to get started!</Text>
+            </Center>
+          )}
         </ScrollView>
       </VStack>
       <Fab

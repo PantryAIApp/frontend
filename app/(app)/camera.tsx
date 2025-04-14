@@ -98,6 +98,7 @@ export default function Camera() {
             "steps": res.data.steps,
             "summary": res.data.summary,
             "name": res.data.name,
+            "user": auth.currentUser!.uid,
         })
             .catch(err => {
                 alert("Error saving recipe. Please try again.");
