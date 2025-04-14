@@ -10,11 +10,14 @@ import { useRef, useState } from "react";
 import { Text } from "@/components/ui/text";
 import { StyleSheet } from "react-native";
 import Animated, { useAnimatedProps, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import * as ImagePicker from 'expo-image-picker';
 import { GestureHandlerRootView, PinchGestureHandler, PinchGestureHandlerGestureEvent, State, TapGestureHandler } from "react-native-gesture-handler";
 
+import { addDoc, collection, getFirestore } from "firebase/firestore";
+
 const auth = getAuth();
+const db = getFirestore();
 
 const AnimatedCameraView = Animated.createAnimatedComponent(CameraView);
 
@@ -64,6 +67,60 @@ export default function Camera() {
         );
     };
 
+    const getRecipeAndId = async (ingredients: string[]) => {
+
+        if (!auth.currentUser) {
+            alert("Please sign in again to use this feature.");
+            return;
+        }
+        let res: AxiosResponse;
+        try {
+            res = await axios.post(`${apiUrl}/generate-recipe`, {
+                ingredients: ingredients,
+            },
+                {
+                    headers: {
+                        Authorization: `Bearer ${await auth.currentUser.getIdToken()}`,
+                    }
+                });
+        } catch (err: any) {
+            alert("Server error: " + err.message + ". Please try again.");
+            console.log(err.cause, err.message, err.response?.data);
+            return;
+        }
+        console.log("Success!", res.data);
+        if (!('ingredients' in res.data) || !('steps' in res.data) || !('summary' in res.data) || !('name' in res.data)) {
+            alert("Please try again. No recipe found.");
+            return;
+        }
+        const out = await addDoc(collection(db, "recipes"), {
+            "ingredients": res.data.ingredients,
+            "steps": res.data.steps,
+            "summary": res.data.summary,
+            "name": res.data.name,
+            "user": auth.currentUser!.uid,
+        })
+            .catch(err => {
+                alert("Error saving recipe. Please try again.");
+                console.log(err.message);
+                return;
+            });
+        if (!out) {
+            alert("Error saving recipe. Please try again.");
+            return;
+        }
+        console.log("Recipe saved to database!", out, out.id);
+        router.push({
+            pathname: '/recipepage',
+            params: { recipeId: out.id },
+        });
+        // go to next screen
+        // router.push({
+        //     pathname: '/recipe',
+        //     params: { recipeId: res.data.recipeId, recipeName: res.data.recipeName },
+        // });
+    };
+
     const getIngredients = async (formData: FormData) => {
         console.log('getting ingredients...');
         if (!auth.currentUser) {
@@ -90,9 +147,13 @@ export default function Camera() {
             router.push({
                 pathname: "/ingredients",
                 params: {
-                ingredients: JSON.stringify(res.data.ingredients),
+                    ingredients: JSON.stringify(res.data.ingredients),
                 },
             });
+            //getRecipeAndId(res.data.ingredients);
+
+            // do req and other logic here in a function and directly navigate to that component,
+            // later just move to the next screen.
         })
             .catch((err: AxiosError) => {
                 // alert("Server error: " + err.message + ". Please try again.");
