@@ -44,6 +44,7 @@ export default function TabLayout() {
           < Stack >
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="camera" options={{ headerShown: false }} />
+            <Stack.Screen name="ingredients" options={{ headerShown: false }} />
             <Stack.Screen name="recipepage" options={{ headerShown: false }} />
           </Stack >
         ) :

@@ -143,7 +143,15 @@ export default function Camera() {
             // go to next screen
             console.log("Success!", res.data.ingredients);
             setLoading(false);
-            getRecipeAndId(res.data.ingredients);
+            // route to new page
+            router.push({
+                pathname: "/ingredients",
+                params: {
+                    ingredients: JSON.stringify(res.data.ingredients),
+                },
+            });
+            //getRecipeAndId(res.data.ingredients);
+
             // do req and other logic here in a function and directly navigate to that component,
             // later just move to the next screen.
         })
