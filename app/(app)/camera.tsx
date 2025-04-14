@@ -173,7 +173,6 @@ export default function Camera() {
             type: 'image/jpeg',
         } as any);
         console.log(await auth.currentUser.getIdToken());
-        await setTimeout(() => { }, 450); // wait for animation to finish
         await getIngredients(formData);
     };
 
