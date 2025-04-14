@@ -89,7 +89,7 @@ export default function Camera() {
             return;
         }
         console.log("Success!", res.data);
-        if (!('ingredients' in res.data) || !('steps' in res.data) || !('summary' in res.data)) {
+        if (!('ingredients' in res.data) || !('steps' in res.data) || !('summary' in res.data) || !('name' in res.data)) {
             alert("Please try again. No recipe found.");
             return;
         }
@@ -97,6 +97,7 @@ export default function Camera() {
             "ingredients": res.data.ingredients,
             "steps": res.data.steps,
             "summary": res.data.summary,
+            "name": res.data.name,
         })
             .catch(err => {
                 alert("Error saving recipe. Please try again.");
