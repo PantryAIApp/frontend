@@ -10,6 +10,8 @@ import { HStack } from "@/components/ui/hstack";
 import { Center } from "@/components/ui/center";
 import { Heading } from "@/components/ui/heading";
 import { ArrowLeftIcon } from "@/components/ui/icon";
+import { Fab, FabIcon, FabLabel } from "@/components/ui/fab";
+import { HomeIcon } from "lucide-react-native";
 
 const db = getFirestore();
 
@@ -75,6 +77,19 @@ export default function RecipePage() {
                         </Box>
                     </TouchableOpacity> */}
                 </Center>
+                <Fab
+                    size="md"
+                    placement="bottom right"
+                    isHovered={false}
+                    isDisabled={false}
+                    isPressed={false}
+                    onPress={() => {
+                        // router.replace('/(app)');
+                        router.dismissAll();
+                    }}
+                >
+                    <FabIcon as={HomeIcon} />
+                </Fab>
 
                 {loading ? (
                     <Center className="flex-1">
