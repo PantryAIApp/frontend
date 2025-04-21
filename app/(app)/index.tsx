@@ -65,29 +65,38 @@ export default function HomeScreen() {
   const getRecipes = async () => {
     if (!auth.currentUser) {
       console.log("Current user not signed in");
-      return;
-    }
-    setLoading(true);
-    const q = query(citiesRef, where("user", "==", auth.currentUser?.uid));
-    const querySnapshot = await getDocs(q);
-    const recipesArray: RecipeToView[] = [];
-    if (auth.currentUser == null || auth.currentUser == undefined) {
-      console.log("Current user not signed in");
+      alert("Current user not signed in");
       setLoading(false);
       return;
     }
-    console.log("working to get queries");
-    querySnapshot.forEach((doc) => {
-      console.log(doc.id, " => ", doc.data());
-      recipesArray.push({
-        user: auth.currentUser!.uid,
-        id: doc.id,
-        name: doc.data().name || 'Recipe Details',
-        summary: doc.data().summary || "",
+    setLoading(true);
+    try {
+      const q = query(citiesRef, where("user", "==", auth.currentUser?.uid));
+      const querySnapshot = await getDocs(q);
+      const recipesArray: RecipeToView[] = [];
+      if (auth.currentUser == null || auth.currentUser == undefined) {
+        console.log("Current user not signed in");
+        alert("Current user not signed in");
+        setLoading(false);
+        return;
+      }
+      console.log("working to get queries");
+      querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data());
+        recipesArray.push({
+          user: auth.currentUser!.uid,
+          id: doc.id,
+          name: doc.data().name || 'Recipe Details',
+          summary: doc.data().summary || "",
+        });
       });
-    });
-    console.log(recipesArray);
-    setRecipes(recipesArray);
+      console.log(recipesArray);
+      setRecipes(recipesArray);
+    }
+    catch (error) {
+      console.error("Error getting recipes: ", error);
+      alert("Error getting recipes: " + error);
+    }
     setLoading(false);
   };
 
@@ -97,7 +106,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     getRecipes();
-  }, [refresh]);
+  }, [refresh, auth.currentUser]);
 
   return (
     <SafeAreaView className="flex-1" key={refresh ?? 'default_main_key'}>
