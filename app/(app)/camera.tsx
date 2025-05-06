@@ -195,7 +195,7 @@ export default function Camera() {
     if (!permission.granted) {
         return (
             <View className="flex-1 justify-center items-center">
-                <Text className="text-white">Camera permissions are required to use this feature</Text>
+                <Text>Camera permissions are required to use this feature</Text>
                 <Button onPress={requestPermission} className="mt-4" variant="solid" size="md" action="primary">
                     <ButtonText>Grant Permissions</ButtonText>
                 </Button>

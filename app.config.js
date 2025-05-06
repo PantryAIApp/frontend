@@ -1,7 +1,7 @@
 export default () => ({
   expo: {
-    name: "Pantry AI",
-    slug: "pantry-ai",
+    name: "Pantry IQ",
+    slug: "pantry-iq",
     version: "1.0.0",
     orientation: "default",
     icon: "./assets/images/new_icon.png",
