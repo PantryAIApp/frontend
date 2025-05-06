@@ -15,7 +15,8 @@ export default () => ({
     },
     ios: {
       infoPlist: {
-        NSCameraUsageDescription: "This app requires access to the camera."
+        NSCameraUsageDescription: "This app requires access to the camera to identify ingredients in your pantry or fridge.",
+        ITSAppUsesNonExemptEncryption: false
       },
       supportsTablet: true,
       bundleIdentifier: "com.pantryai.app",
