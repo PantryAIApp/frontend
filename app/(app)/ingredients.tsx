@@ -14,6 +14,7 @@ import Loader from '@/components/Loader';
 import { Plus, Trash } from 'lucide-react-native';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
 const auth = getAuth();
 const db = getFirestore();
@@ -118,25 +119,52 @@ export default function Ingredients() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <VStack className="flex-1 bg-background">
+        {/* <TouchableOpacity
+          onPress={() => router.back()}
+          className="absolute top-4 left-4 z-10 flex flex-row items-center"
+        >
+          <Ionicons name="chevron-back" size={24} color="#3b82f6" />
+          <Text className="text-blue-600 font-medium ml-1">Back</Text>
+        </TouchableOpacity>
         <Center className="w-full mb-4 relative">
-          <Heading size="2xl" className="text-blue-600 font-bold">
-            Ingredients
-          </Heading>
+          <HStack>
+            <Heading size="2xl" className="text-blue-600 font-bold">
+              Ingredients
+            </Heading>
+          </HStack>
+        </Center> */}
+        <HStack className='w-full items-center'>
+          <View className='flex-1 max-w-[25%]'>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="flex flex-row items-center pl-1"
+            >
+              <Ionicons name="chevron-back" size={24} color="#3b82f6" />
+              <Text className="text-blue-600 font-medium ml-1">Back</Text>
+            </TouchableOpacity>
+          </View>
+          <View className="flex-1 items-center justify-center">
+            <Heading size="2xl" className="text-blue-600 font-bold">
+              Ingredients
+            </Heading>
+          </View>
+          <View className="flex-1 max-w-[25%]" />
+        </HStack>
 
-          {/* Top-right blue text link */}
-          {/* <TouchableOpacity
+        {/* Top-right blue text link */}
+        {/* <TouchableOpacity
           onPress={() =>
             Linking.openURL('https://www.google.com/maps/search/grocery+store+near+me')
           }
         >
           <Text className="text-blue-500 underline">Find Grocery Store</Text>
         </TouchableOpacity> */}
-        </Center>
+        {/* </Center> */}
 
         <ScrollView
           className="flex-1"
           contentContainerStyle={{
-            paddingTop: 20,
+            paddingTop: 10,
             paddingLeft: 20,
             paddingRight: 20,
             paddingBottom: 100, // leave space for floating button
