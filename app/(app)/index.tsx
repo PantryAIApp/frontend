@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet, Platform, TouchableOpacity, Linking } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -130,11 +130,17 @@ export default function HomeScreen() {
             <MenuItem key="Sign out" textValue="Sign out" onPress={() => signOut(auth)}>
               <MenuItemLabel size="sm">Sign out</MenuItemLabel>
             </MenuItem>
-            <MenuItem key="Change theme" textValue="Change theme" onPress={() => {
+            {/* <MenuItem key="Change theme" textValue="Change theme" onPress={() => {
               setDarkMode(!darkMode);
               console.log(darkMode, ' is dark mode');
             }}>
               <MenuItemLabel size="sm">Change theme</MenuItemLabel>
+            </MenuItem> */} {/* Add later */}
+            <MenuItem key="tos" textValue="Terms of Service" onPress={() => Linking.openURL('https://www.pantryiq.co/terms')}>
+              <MenuItemLabel size="sm">Terms of Service</MenuItemLabel>
+            </MenuItem>
+            <MenuItem key="privacy" textValue="Privacy Policy" onPress={() => Linking.openURL('https://www.pantryiq.co/privacy')}>
+              <MenuItemLabel size="sm">Privacy Policy</MenuItemLabel>
             </MenuItem>
           </Menu>
         </HStack>
