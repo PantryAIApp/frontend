@@ -75,6 +75,7 @@ export default function Ingredients() {
       "summary": res.data.summary,
       "name": res.data.name,
       "user": auth.currentUser!.uid,
+      "createdAt": new Date(),
     })
       .catch(err => {
         alert("Error saving recipe. Please try again.");

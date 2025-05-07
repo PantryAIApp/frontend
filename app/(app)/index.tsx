@@ -34,6 +34,7 @@ interface RecipeToView {
   name: string,
   summary: string,
   user: string
+  createdAt: Date
 };
 
 const recipesExample = [
@@ -88,8 +89,14 @@ export default function HomeScreen() {
           id: doc.id,
           name: doc.data().name || 'Recipe Details',
           summary: doc.data().summary || "",
+          createdAt: doc.data().createdAt || new Date(),
         });
       });
+      recipesArray.sort((a, b) => {
+        if (a.createdAt < b.createdAt) { return 1; }
+        else if (a.createdAt == b.createdAt) { return 0; }
+        else { return -1; }
+      }); // reverse order
       console.log(recipesArray);
       setRecipes(recipesArray);
     }
