@@ -15,6 +15,7 @@ import { Plus, Trash } from 'lucide-react-native';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { LinearTransition, runOnJS } from 'react-native-reanimated';
 
 const auth = getAuth();
 const db = getFirestore();
@@ -116,6 +117,22 @@ export default function Ingredients() {
     // Add navigation or API logic here
   };
 
+  const renderItem = ({ item, index }: { item: string; index: number }) => {
+    return (
+      <Box key={index} className="w-full bg-white rounded-lg shadow-md p-4 mb-4">
+        <HStack className='w-full justify-between items-center'>
+          <Text className="text-gray-800 flex-1">{item}</Text>
+          <TouchableOpacity
+            onPress={() => handleDeleteIngredient(index)}
+            className=""
+          >
+            <Trash color="red" size={20} />
+          </TouchableOpacity>
+        </HStack>
+      </Box>
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <VStack className="flex-1 bg-background">
@@ -161,15 +178,15 @@ export default function Ingredients() {
         </TouchableOpacity> */}
         {/* </Center> */}
 
-        <ScrollView
+        <View
           className="flex-1"
-          contentContainerStyle={{
+          style={{
             paddingTop: 10,
             paddingLeft: 20,
             paddingRight: 20,
-            paddingBottom: 100, // leave space for floating button
+            paddingBottom: 90, // leave space for floating button
           }}
-          showsVerticalScrollIndicator={false}
+        // showsVerticalScrollIndicator={false}
         >
           {/* Input field and Add button in the same row */}
           <View className="flex-row w-full items-center gap-2 mb-4">
@@ -188,23 +205,11 @@ export default function Ingredients() {
             </TouchableOpacity>
           </View>
           {ingredientList.length > 0 ? (
-            ingredientList.map((item, index) => (
-              <Box key={index} className="w-full bg-white rounded-lg shadow-md p-4 mb-4">
-                <HStack className='w-full justify-between items-center'>
-                  <Text className="text-gray-800 flex-1">{item}</Text>
-                  <TouchableOpacity
-                    onPress={() => handleDeleteIngredient(index)}
-                    className=""
-                  >
-                    <Trash color="red" size={20} />
-                  </TouchableOpacity>
-                </HStack>
-              </Box>
-            ))
+            <Animated.FlatList data={ingredientList} renderItem={renderItem} itemLayoutAnimation={LinearTransition} keyExtractor={(item) => item} />
           ) : (
             <Text className="text-center text-gray-500 mb-4">No ingredients found.</Text>
           )}
-        </ScrollView>
+        </View>
 
         {/* Floating Confirm Button */}
         <TouchableOpacity
