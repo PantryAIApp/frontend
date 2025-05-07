@@ -183,6 +183,9 @@ export default function HomeScreen() {
               <MenuItem key="privacy" textValue="Privacy Policy" onPress={() => Linking.openURL('https://www.pantryiq.co/privacy')}>
                 <MenuItemLabel size="sm">Privacy Policy</MenuItemLabel>
               </MenuItem>
+              <MenuItem key="contact-us" textValue="Contact Us" onPress={() => Linking.openURL('https://www.pantryiq.co/contact')}>
+                <MenuItemLabel size="sm">Contact Us</MenuItemLabel>
+              </MenuItem>
             </Menu>
           </View>
         </HStack>
