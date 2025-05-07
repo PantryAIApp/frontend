@@ -2,7 +2,7 @@ import { CameraType, CameraView, PermissionResponse, useCameraPermissions } from
 import { getAuth, signOut } from "firebase/auth";
 import { TouchableOpacity, View } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Loader from "@/components/Loader";
 import { router, useRouter } from "expo-router";
@@ -22,6 +22,7 @@ const db = getFirestore();
 const AnimatedCameraView = Animated.createAnimatedComponent(CameraView);
 
 export default function Camera() {
+    const insets = useSafeAreaInsets();
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const [loading, setLoading] = useState(false);
@@ -207,10 +208,19 @@ export default function Camera() {
         setFacing(current => (current === 'back' ? 'front' : 'back'));
     }
 
-
     //style={[styles.container, animatedStyle]}
     return (
         <View className='flex-1 justify-center'>
+            <TouchableOpacity
+                onPress={() => router.back()}
+                className="absolute left-4 z-10 bg-black/40 py-2 px-4 rounded-full flex flex-row items-center"
+                style={{
+                    top: insets.top + 10,
+                }}
+            >
+                <Ionicons name="chevron-back" size={20} color="white" />
+                <Text className="text-white ml-1 font-medium">Back</Text>
+            </TouchableOpacity>
             <AnimatedCameraView
                 ref={cameraRef}
                 style={styles.camera}
