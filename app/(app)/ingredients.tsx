@@ -15,7 +15,7 @@ import { Plus, Trash } from 'lucide-react-native';
 import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { LinearTransition, runOnJS } from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 
 const auth = getAuth();
 const db = getFirestore();
