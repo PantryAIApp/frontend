@@ -1,27 +1,28 @@
-import { CameraType, CameraView, PermissionResponse, useCameraPermissions } from "expo-camera";
-import { getAuth, signOut } from "firebase/auth";
+import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+import { getAuth } from "firebase/auth";
 import { TouchableOpacity, View } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Loader from "@/components/Loader";
-import { router, useRouter } from "expo-router";
+import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { Text } from "@/components/ui/text";
 import { StyleSheet } from "react-native";
-import Animated, { useAnimatedProps, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedProps, useSharedValue } from 'react-native-reanimated';
 import axios, { AxiosError, AxiosResponse } from "axios";
 import * as ImagePicker from 'expo-image-picker';
-import { GestureHandlerRootView, PinchGestureHandler, PinchGestureHandlerGestureEvent, State, TapGestureHandler } from "react-native-gesture-handler";
+import { PinchGestureHandler, PinchGestureHandlerGestureEvent, State } from "react-native-gesture-handler";
 
-import { addDoc, collection, getFirestore } from "firebase/firestore";
+// import { getFirestore } from "firebase/firestore";
 
 const auth = getAuth();
-const db = getFirestore();
+// const db = getFirestore();
 
 const AnimatedCameraView = Animated.createAnimatedComponent(CameraView);
 
 export default function Camera() {
+    const insets = useSafeAreaInsets();
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const [loading, setLoading] = useState(false);
@@ -40,9 +41,9 @@ export default function Camera() {
     }));
 
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: opacity.value,
-    }));
+    // const animatedStyle = useAnimatedStyle(() => ({
+    //     opacity: opacity.value,
+    // }));
 
     // Update zoom as the pinch gesture updates.
     const onPinchGestureEvent = (event: PinchGestureHandlerGestureEvent) => {
@@ -59,22 +60,22 @@ export default function Camera() {
         }
     };
 
-    const triggerShutter = () => {
-        // This sequence fades out then fades in once
-        opacity.value = withSequence(
-            withTiming(1, { duration: 200 }), // Fade to transparent quickly (simulate shutter flash)
-            withTiming(0, { duration: 200 })  // Fade back to opaque
-        );
-    };
+    // const triggerShutter = () => {
+    //     // This sequence fades out then fades in once
+    //     opacity.value = withSequence(
+    //         withTiming(1, { duration: 200 }), // Fade to transparent quickly (simulate shutter flash)
+    //         withTiming(0, { duration: 200 })  // Fade back to opaque
+    //     );
+    // };
 
     const getIngredients = async (formData: FormData) => {
         console.log('getting ingredients...');
         if (!auth.currentUser) {
             alert("Please sign in again to use this feature.");
+            setLoading(false);
             return;
         }
-        console.log(await auth.currentUser.getIdToken());
-        setLoading(true);
+        // setLoading(true); // not necessary but doesn't hurt
         axios.post(`${apiUrl}/extract-ingredients`, formData, {
             headers: {
                 Authorization: `Bearer ${await auth.currentUser.getIdToken()}`,
@@ -168,14 +169,25 @@ export default function Camera() {
         await getIngredients(formData);
     }
 
+    const takePhotoWrapper = async () => {
+        // triggerShutter();
+        setTimeout(() => {
+            if (!loading) {
+                setLoading(true);
+            }
+        }, 1000);
+        takePhoto();
+    };
+
     const takePhoto = async () => {
-        triggerShutter();
         const picture = await cameraRef.current?.takePictureAsync();
         if (!auth.currentUser) {
+            setLoading(false);
             alert("Please sign in again to use this feature.");
             return;
         }
         if (!picture) {
+            setLoading(false);
             alert("Error with picture taking. Please try again.");
             return;
         }
@@ -195,7 +207,7 @@ export default function Camera() {
     if (!permission.granted) {
         return (
             <View className="flex-1 justify-center items-center">
-                <Text className="text-white">Camera permissions are required to use this feature</Text>
+                <Text>Camera permissions are required to use this feature</Text>
                 <Button onPress={requestPermission} className="mt-4" variant="solid" size="md" action="primary">
                     <ButtonText>Grant Permissions</ButtonText>
                 </Button>
@@ -207,10 +219,19 @@ export default function Camera() {
         setFacing(current => (current === 'back' ? 'front' : 'back'));
     }
 
-
     //style={[styles.container, animatedStyle]}
     return (
         <View className='flex-1 justify-center'>
+            <TouchableOpacity
+                onPress={() => router.back()}
+                className="absolute left-4 z-10 bg-black/40 py-2 px-4 rounded-full flex flex-row items-center"
+                style={{
+                    top: insets.top + 10,
+                }}
+            >
+                <Ionicons name="chevron-back" size={20} color="white" />
+                <Text className="text-white ml-1 font-medium">Back</Text>
+            </TouchableOpacity>
             <AnimatedCameraView
                 ref={cameraRef}
                 style={styles.camera}
@@ -227,14 +248,14 @@ export default function Camera() {
                 <TouchableOpacity onPress={toggleCameraFacing} className='align-items-center'>
                     <Ionicons name="camera-reverse-outline" size={50} color="white" />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={takePhoto} className='align-items-center'>
+                <TouchableOpacity onPress={takePhotoWrapper} className='align-items-center'>
                     <Ionicons name={"radio-button-on-outline"} size={50} color={"white"} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={selectImage} className='align-items-center'>
                     <Ionicons name="document-outline" size={50} color="white" />
                 </TouchableOpacity>
             </View>
-            <Animated.View style={[StyleSheet.absoluteFill, animatedStyle, { backgroundColor: 'white' }]} pointerEvents="none" />
+            {/* <Animated.View style={[StyleSheet.absoluteFill, animatedStyle, { backgroundColor: 'white' }]} pointerEvents="none" /> */}
             <Loader visible={loading} />
         </View>
     );

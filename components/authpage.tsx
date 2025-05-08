@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, TouchableOpacity, Text, SafeAreaView, KeyboardAvoidingView, Platform, Pressable, Linking } from 'react-native';
 import { Box } from '@/components/ui/box';
 import { VStack } from '@/components/ui/vstack';
 import { Heading } from '@/components/ui/heading';
@@ -166,6 +166,17 @@ export default function AuthPage({ signIn, router }: { signIn: boolean, router: 
                             </TouchableOpacity>
                         </HStack>
                     </Center>
+                    <View className="flex-row flex-wrap justify-center mt-4">
+                        <Text className="text-gray-600">By {signIn ? "signing in" : "signing up"} and using the app, you agree to our </Text>
+                        <TouchableOpacity onPress={() => Linking.openURL('https://www.pantryiq.co/terms')}>
+                            <Text className="text-blue-600 font-semibold">Terms of Service</Text>
+                        </TouchableOpacity>
+                        <Text className="text-gray-600"> and </Text>
+                        <TouchableOpacity onPress={() => Linking.openURL('https://www.pantryiq.co/privacy')}>
+                            <Text className="text-blue-600 font-semibold">Privacy Policy</Text>
+                        </TouchableOpacity>
+                        <Text className="text-gray-600">.</Text>
+                    </View>
                 </Box>
             </KeyboardAvoidingView>
         </SafeAreaView>

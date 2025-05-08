@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet, Platform, TouchableOpacity, Linking, View } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -34,6 +34,7 @@ interface RecipeToView {
   name: string,
   summary: string,
   user: string
+  createdAt: Date
 };
 
 const recipesExample = [
@@ -88,8 +89,14 @@ export default function HomeScreen() {
           id: doc.id,
           name: doc.data().name || 'Recipe Details',
           summary: doc.data().summary || "",
+          createdAt: doc.data().createdAt || new Date(),
         });
       });
+      recipesArray.sort((a, b) => {
+        if (a.createdAt < b.createdAt) { return 1; }
+        else if (a.createdAt == b.createdAt) { return 0; }
+        else { return -1; }
+      }); // reverse order
       console.log(recipesArray);
       setRecipes(recipesArray);
     }
@@ -107,11 +114,19 @@ export default function HomeScreen() {
   useEffect(() => {
     getRecipes();
   }, [refresh, auth.currentUser]);
-
+  // dark mode option
+  /*
+               <MenuItem key="Change theme" textValue="Change theme" onPress={() => {
+              setDarkMode(!darkMode);
+              console.log(darkMode, ' is dark mode');
+            }}>
+              <MenuItemLabel size="sm">Change theme</MenuItemLabel>
+            </MenuItem>  // add later once fully supported
+  */
   return (
     <SafeAreaView className="flex-1" key={refresh ?? 'default_main_key'}>
       <VStack className="flex-1" space={"md"}>
-        <HStack className="w-full" space={"md"} reversed={true}>
+        {/* <HStack className="w-full" space={"md"} reversed={true}>
           <Menu
             placement="bottom left"
             offset={5}
@@ -130,17 +145,50 @@ export default function HomeScreen() {
             <MenuItem key="Sign out" textValue="Sign out" onPress={() => signOut(auth)}>
               <MenuItemLabel size="sm">Sign out</MenuItemLabel>
             </MenuItem>
-            <MenuItem key="Change theme" textValue="Change theme" onPress={() => {
-              setDarkMode(!darkMode);
-              console.log(darkMode, ' is dark mode');
-            }}>
-              <MenuItemLabel size="sm">Change theme</MenuItemLabel>
+            <MenuItem key="tos" textValue="Terms of Service" onPress={() => Linking.openURL('https://www.pantryiq.co/terms')}>
+              <MenuItemLabel size="sm">Terms of Service</MenuItemLabel>
+            </MenuItem>
+            <MenuItem key="privacy" textValue="Privacy Policy" onPress={() => Linking.openURL('https://www.pantryiq.co/privacy')}>
+              <MenuItemLabel size="sm">Privacy Policy</MenuItemLabel>
             </MenuItem>
           </Menu>
+        </HStack> */}
+        <HStack className="w-full items-center">
+          <View className="flex-1 max-w-[25%]" />
+          <View className='flex-1 justify-center items-center'>
+            <Heading size="2xl" className="text-center text-blue-600 font-bold">Recipes</Heading>
+          </View>
+          <View className="flex-1 max-w-[25%] items-end">
+            <Menu
+              placement="bottom left"
+              offset={5}
+              trigger={({ ...triggerProps }) => {
+                return (
+                  <TouchableOpacity {...triggerProps} className="flex-row items-center mr-5">
+                    <Avatar size="md" className="">
+                      <AvatarImage
+                        source={require('@/assets/images/new_icon.png')}
+                      />
+                      <AvatarBadge />
+                    </Avatar>
+                  </TouchableOpacity>
+                )
+              }}>
+              <MenuItem key="Sign out" textValue="Sign out" onPress={() => signOut(auth)}>
+                <MenuItemLabel size="sm">Sign out</MenuItemLabel>
+              </MenuItem>
+              <MenuItem key="tos" textValue="Terms of Service" onPress={() => Linking.openURL('https://www.pantryiq.co/terms')}>
+                <MenuItemLabel size="sm">Terms of Service</MenuItemLabel>
+              </MenuItem>
+              <MenuItem key="privacy" textValue="Privacy Policy" onPress={() => Linking.openURL('https://www.pantryiq.co/privacy')}>
+                <MenuItemLabel size="sm">Privacy Policy</MenuItemLabel>
+              </MenuItem>
+              <MenuItem key="contact-us" textValue="Contact Us" onPress={() => Linking.openURL('https://www.pantryiq.co/contact')}>
+                <MenuItemLabel size="sm">Contact Us</MenuItemLabel>
+              </MenuItem>
+            </Menu>
+          </View>
         </HStack>
-        <Center className='w-full'>
-          <Heading size="2xl" className="text-center text-blue-600 font-bold">Recipes</Heading>
-        </Center>
         <ScrollView
           className="flex-1"
           contentContainerStyle={{
