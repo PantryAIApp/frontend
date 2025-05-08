@@ -102,7 +102,11 @@ export default function Ingredients() {
   };
 
   const handleAddIngredient = () => {
-    if (newIngredient.trim()) {
+    if (newIngredient.trim()) { // if ingredient already exists, remove it from the list
+      const indexOfIngredient = ingredientList.indexOf(newIngredient.trim());
+      if (indexOfIngredient !== -1) {
+        handleDeleteIngredient(indexOfIngredient);
+      }
       setIngredientList(prev => [newIngredient.trim(), ...prev]);
       setNewIngredient('');
     }
