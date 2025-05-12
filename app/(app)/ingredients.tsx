@@ -18,6 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { Platform } from 'react-native';
 import { useRecipe } from '@/hooks/useRecipe';
+import showNewToast from '@/components/ToastWrapper';
+import { useToast } from '@/components/ui/toast';
 
 const auth = getAuth();
 const db = getFirestore();
@@ -28,8 +30,9 @@ const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
 
 export default function Ingredients() {
+  const toast = useToast();
   const { ingredients } = useLocalSearchParams();
-  const { loading, generateRecipe } = useRecipe((message)=>alert(message));
+  const { loading, generateRecipe } = useRecipe((message)=>showNewToast(toast,'Error',message,'error'));
 
 
   let parsedIngredients: string[] = [];
@@ -47,7 +50,7 @@ export default function Ingredients() {
 
     const id = await generateRecipe(ingredients);
     if (id) {
-    router.push({ pathname: '/recipepage', params: { recipeId: id } });
+    router.push({ pathname: '/recipepage', params: { recipeId: id, ingredientsFromPage: ingredients } });
     }
     // go to next screen
     // router.push({

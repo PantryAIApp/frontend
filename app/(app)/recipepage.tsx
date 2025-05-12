@@ -11,20 +11,26 @@ import { Center } from "@/components/ui/center";
 import { Heading } from "@/components/ui/heading";
 import { ArrowLeftIcon } from "@/components/ui/icon";
 import { Fab, FabIcon, FabLabel } from "@/components/ui/fab";
-import { HomeIcon } from "lucide-react-native";
+import { HomeIcon, RefreshCcw } from "lucide-react-native";
 import { RefreshType } from "@/contexts/refresh_context";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRecipe } from "@/hooks/useRecipe";
+import showNewToast from "@/components/ToastWrapper";
+import { useToast } from "@/components/ui/toast";
 
 const db = getFirestore();
 
 export default function RecipePage() {
     const params = useLocalSearchParams();
-    const { recipeId } = params as { recipeId: string };
+    const { recipeId, ingredientsFromPage } = params as { recipeId: string, ingredientsFromPage?: string };
+    const [parsedIngredientsFromPage, setParsedIngredientsFromPage] = useState<string[]>([]);
     const [ingredients, setIngredients] = useState<string[]>([]);
     const [steps, setSteps] = useState<string[]>([]);
     const [summary, setSummary] = useState<string>(""); // may not be needed
     const [name, setName] = useState<string>(""); // may not be needed
-    const [loading, setLoading] = useState(true);
+    // const [loading, setLoading] = useState(true);
+    const toast = useToast();
+    const { loading, generateRecipe, setLoading } = useRecipe((message)=>showNewToast(toast,'Error',message,'error'), true);
 
     const refreshContext = useContext(RefreshType);
     if (!refreshContext) throw new Error("RefreshContext must be used within a RefreshProvider");
@@ -48,6 +54,17 @@ export default function RecipePage() {
         }
         // Fetch recipe details using the recipeId here
         // Example: fetchRecipeDetails(recipeId);
+        if (ingredientsFromPage) {
+            // console.log("Ingredients from page:", ingredientsFromPage);
+            try {
+                const parsedIngredients = ingredientsFromPage.split(",").map((ingredient: string) => ingredient.trim());
+                setParsedIngredientsFromPage(parsedIngredients);
+                console.log("Parsed Ingredients:", parsedIngredients);
+            }
+            catch (error: any) {
+                //console.error("Error parsing ingredients:", error);
+            }
+        }
         getDoc(doc(db, "recipes", recipeId))
             .then((docSnapshot) => {
                 if (docSnapshot.exists()) {
@@ -101,12 +118,23 @@ export default function RecipePage() {
                 >
                     <FabIcon as={HomeIcon} />
                 </Fab>
+                {parsedIngredientsFromPage.length > 0 && <Fab
+                    size="md"
+                    placement="bottom left"
+                    isHovered={false}
+                    isDisabled={false}
+                    isPressed={false}
+                    onPress={async () => {
+                        const id = await generateRecipe(ingredients);
+                        if (id) {
+                            router.replace({ pathname: '/recipepage', params: { recipeId: id, ingredientsFromPage: ingredients } });
+                        }
+                    }}
+                >
+                    <FabIcon as={RefreshCcw} />
+                </Fab>}
 
-                {loading ? (
-                    <Center className="flex-1">
-                        <CustomLoader visible={loading} />
-                    </Center>
-                ) : (
+                {!loading &&(
                     <ScrollView
                         className="flex-1"
                         contentContainerStyle={{
@@ -169,6 +197,7 @@ export default function RecipePage() {
                     </ScrollView>
                 )}
             </VStack>
+            <CustomLoader visible={loading} />
         </SafeAreaView>
     )
 }

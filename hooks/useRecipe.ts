@@ -6,9 +6,8 @@ import { useState } from "react";
 const auth = getAuth();
 const db = getFirestore();
 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-// const apiUrl='http://localhost:3000/api';
 
-export function useRecipe(errorHandler: (message: string) => void) {
+export function useRecipe(errorHandler: (message: string) => void, loadingDefault: boolean = false) {
   const [loading, setLoading] = useState(false);
   
   const generateRecipe = async (ingredients: string[]) => {
@@ -56,5 +55,5 @@ export function useRecipe(errorHandler: (message: string) => void) {
     }
   };
   
-  return { loading, generateRecipe };
+  return { loading, generateRecipe, setLoading };
 }
