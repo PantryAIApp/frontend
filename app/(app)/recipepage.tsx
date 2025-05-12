@@ -126,7 +126,7 @@ export default function RecipePage() {
                     isDisabled={false}
                     isPressed={false}
                     onPress={async () => {
-                        const id = await generateRecipe(ingredients);
+                        const id = await generateRecipe(parsedIngredientsFromPage);
                         if (id) {
                             router.replace({ pathname: '/recipepage', params: { recipeId: id, ingredientsFromPage: ingredients } });
                         }
