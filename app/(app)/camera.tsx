@@ -166,6 +166,7 @@ export default function Camera() {
             name: fileName,
             type: mimeType,
         } as any);
+        setLoading(true);
         await getIngredients(formData);
     }
 

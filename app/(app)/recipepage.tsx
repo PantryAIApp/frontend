@@ -1,7 +1,7 @@
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react";
-import { FlatList, SafeAreaView, ScrollView, TouchableOpacity, View } from "react-native";
+import { FlatList, ScrollView, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/ui/text";
 import CustomLoader from "@/components/Loader";
 import { VStack } from "@/components/ui/vstack";
@@ -11,25 +11,31 @@ import { Center } from "@/components/ui/center";
 import { Heading } from "@/components/ui/heading";
 import { ArrowLeftIcon } from "@/components/ui/icon";
 import { Fab, FabIcon, FabLabel } from "@/components/ui/fab";
-import { HomeIcon } from "lucide-react-native";
+import { HomeIcon, RefreshCcw } from "lucide-react-native";
 import { RefreshType } from "@/contexts/refresh_context";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRecipe } from "@/hooks/useRecipe";
+import showNewToast from "@/components/ToastWrapper";
+import { useToast } from "@/components/ui/toast";
 
 const db = getFirestore();
 
 export default function RecipePage() {
     const params = useLocalSearchParams();
-    const { recipeId } = params as { recipeId: string };
+    const { recipeId, ingredientsFromPage } = params as { recipeId: string, ingredientsFromPage?: string };
+    const [parsedIngredientsFromPage, setParsedIngredientsFromPage] = useState<string[]>([]);
     const [ingredients, setIngredients] = useState<string[]>([]);
     const [steps, setSteps] = useState<string[]>([]);
     const [summary, setSummary] = useState<string>(""); // may not be needed
     const [name, setName] = useState<string>(""); // may not be needed
-    const [loading, setLoading] = useState(true);
+    const [recipeLoading, setRecipeLoading] = useState(true);
+    const toast = useToast();
+    const { loading, generateRecipe} = useRecipe((message)=>showNewToast(toast,'Error',message,'error'), true);
 
     const refreshContext = useContext(RefreshType);
     if (!refreshContext) throw new Error("RefreshContext must be used within a RefreshProvider");
 
     const { refresh, setRefresh } = refreshContext;
-
 
     useEffect(() => {
         // Clear previous data when loading a new recipe
@@ -37,16 +43,27 @@ export default function RecipePage() {
         setSteps([]);
         setSummary("");
         setName("");
-        setLoading(true);
+        setRecipeLoading(true);
         if (recipeId) {
             console.log("Recipe ID:", recipeId);
         } else {
             alert("No recipe ID provided to the recipe page.");
             console.error("No recipe ID provided in the URL.");
-            setLoading(false);
+            setRecipeLoading(false);
         }
         // Fetch recipe details using the recipeId here
         // Example: fetchRecipeDetails(recipeId);
+        if (ingredientsFromPage) {
+            // console.log("Ingredients from page:", ingredientsFromPage);
+            try {
+                const parsedIngredients = ingredientsFromPage.split(",").map((ingredient: string) => ingredient.trim());
+                setParsedIngredientsFromPage(parsedIngredients);
+                console.log("Parsed Ingredients:", parsedIngredients);
+            }
+            catch (error: any) {
+                //console.error("Error parsing ingredients:", error);
+            }
+        }
         getDoc(doc(db, "recipes", recipeId))
             .then((docSnapshot) => {
                 if (docSnapshot.exists()) {
@@ -57,21 +74,23 @@ export default function RecipePage() {
                     setSummary(recipeData.summary || ""); // may not be needed
                     setName(recipeData.name || "Recipe Details"); // may not be needed
                 } else {
-                    console.error("No such document!");
+                    showNewToast(toast, 'Error', "Failed to fetch recipe. Please try again.", 'error');
+                    //console.error("No such document!");
                 }
             })
             .catch((error) => {
+                showNewToast(toast, 'Error', "Failed to fetch recipe. Please try again.", 'error');
                 console.error("Error fetching recipe:", error);
             })
             .finally(() => {
                 // console.log(steps, ingredients, summary);
-                setLoading(false);
+                setRecipeLoading(false);
             });
         // Cleanup function to avoid memory leaks
     }, []);
 
     useEffect(() => {
-        console.log("State updated:", { ingredients, steps, summary, loading });
+        console.log("State updated:", { ingredients, steps, summary, loading, recipeLoading });
     }, [ingredients, steps, summary]);
 
     return (
@@ -100,16 +119,28 @@ export default function RecipePage() {
                 >
                     <FabIcon as={HomeIcon} />
                 </Fab>
+                {parsedIngredientsFromPage.length > 0 && <Fab
+                    size="md"
+                    placement="bottom left"
+                    isHovered={false}
+                    isDisabled={false}
+                    isPressed={false}
+                    onPress={async () => {
+                        const id = await generateRecipe(parsedIngredientsFromPage);
+                        if (id) {
+                            router.replace({ pathname: '/recipepage', params: { recipeId: id, ingredientsFromPage: parsedIngredientsFromPage } });
+                        }
+                    }}
+                >
+                    <FabIcon as={RefreshCcw} />
+                </Fab>}
 
-                {loading ? (
-                    <Center className="flex-1">
-                        <CustomLoader visible={loading} />
-                    </Center>
-                ) : (
+                {!(loading||recipeLoading) &&(
                     <ScrollView
                         className="flex-1"
                         contentContainerStyle={{
-                            padding: 16,
+                            paddingTop: 16,
+                            paddingHorizontal: 16,
                             paddingBottom: 100,
                         }}
                         showsVerticalScrollIndicator={false}
@@ -156,7 +187,7 @@ export default function RecipePage() {
                                             <Center className="w-8 h-8 rounded-full bg-blue-600 mt-1">
                                                 <Text className="text-white font-bold">{index + 1}</Text>
                                             </Center>
-                                            <Text className="text-gray-800 flex-1">{step}</Text>
+                                            <Text className="text-gray-800 flex-1 self-center">{step}</Text>
                                         </HStack>
                                     ))}
                                 </VStack>
@@ -167,6 +198,7 @@ export default function RecipePage() {
                     </ScrollView>
                 )}
             </VStack>
+            <CustomLoader visible={loading||recipeLoading} />
         </SafeAreaView>
     )
 }
