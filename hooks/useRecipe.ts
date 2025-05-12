@@ -55,5 +55,5 @@ export function useRecipe(errorHandler: (message: string) => void, loadingDefaul
     }
   };
   
-  return { loading, generateRecipe, setLoading };
+  return { loading, generateRecipe};
 }

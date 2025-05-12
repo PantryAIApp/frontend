@@ -28,15 +28,14 @@ export default function RecipePage() {
     const [steps, setSteps] = useState<string[]>([]);
     const [summary, setSummary] = useState<string>(""); // may not be needed
     const [name, setName] = useState<string>(""); // may not be needed
-    // const [loading, setLoading] = useState(true);
+    const [recipeLoading, setRecipeLoading] = useState(true);
     const toast = useToast();
-    const { loading, generateRecipe, setLoading } = useRecipe((message)=>showNewToast(toast,'Error',message,'error'), true);
+    const { loading, generateRecipe} = useRecipe((message)=>showNewToast(toast,'Error',message,'error'), true);
 
     const refreshContext = useContext(RefreshType);
     if (!refreshContext) throw new Error("RefreshContext must be used within a RefreshProvider");
 
     const { refresh, setRefresh } = refreshContext;
-
 
     useEffect(() => {
         // Clear previous data when loading a new recipe
@@ -44,13 +43,13 @@ export default function RecipePage() {
         setSteps([]);
         setSummary("");
         setName("");
-        setLoading(true);
+        setRecipeLoading(true);
         if (recipeId) {
             console.log("Recipe ID:", recipeId);
         } else {
             alert("No recipe ID provided to the recipe page.");
             console.error("No recipe ID provided in the URL.");
-            setLoading(false);
+            setRecipeLoading(false);
         }
         // Fetch recipe details using the recipeId here
         // Example: fetchRecipeDetails(recipeId);
@@ -75,21 +74,23 @@ export default function RecipePage() {
                     setSummary(recipeData.summary || ""); // may not be needed
                     setName(recipeData.name || "Recipe Details"); // may not be needed
                 } else {
-                    console.error("No such document!");
+                    showNewToast(toast, 'Error', "Failed to fetch recipe. Please try again.", 'error');
+                    //console.error("No such document!");
                 }
             })
             .catch((error) => {
+                showNewToast(toast, 'Error', "Failed to fetch recipe. Please try again.", 'error');
                 console.error("Error fetching recipe:", error);
             })
             .finally(() => {
                 // console.log(steps, ingredients, summary);
-                setLoading(false);
+                setRecipeLoading(false);
             });
         // Cleanup function to avoid memory leaks
     }, []);
 
     useEffect(() => {
-        console.log("State updated:", { ingredients, steps, summary, loading });
+        console.log("State updated:", { ingredients, steps, summary, loading, recipeLoading });
     }, [ingredients, steps, summary]);
 
     return (
@@ -134,7 +135,7 @@ export default function RecipePage() {
                     <FabIcon as={RefreshCcw} />
                 </Fab>}
 
-                {!loading &&(
+                {!(loading||recipeLoading) &&(
                     <ScrollView
                         className="flex-1"
                         contentContainerStyle={{
@@ -197,7 +198,7 @@ export default function RecipePage() {
                     </ScrollView>
                 )}
             </VStack>
-            <CustomLoader visible={loading} />
+            <CustomLoader visible={loading||recipeLoading} />
         </SafeAreaView>
     )
 }
