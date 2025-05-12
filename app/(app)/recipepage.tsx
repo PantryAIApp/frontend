@@ -186,7 +186,7 @@ export default function RecipePage() {
                                             <Center className="w-8 h-8 rounded-full bg-blue-600 mt-1">
                                                 <Text className="text-white font-bold">{index + 1}</Text>
                                             </Center>
-                                            <Text className="text-gray-800 flex-1">{step}</Text>
+                                            <Text className="text-gray-800 flex-1 self-center">{step}</Text>
                                         </HStack>
                                     ))}
                                 </VStack>
