@@ -128,7 +128,7 @@ export default function RecipePage() {
                     onPress={async () => {
                         const id = await generateRecipe(parsedIngredientsFromPage);
                         if (id) {
-                            router.replace({ pathname: '/recipepage', params: { recipeId: id, ingredientsFromPage: ingredients } });
+                            router.replace({ pathname: '/recipepage', params: { recipeId: id, ingredientsFromPage: parsedIngredientsFromPage } });
                         }
                     }}
                 >
