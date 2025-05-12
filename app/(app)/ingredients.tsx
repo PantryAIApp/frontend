@@ -16,6 +16,7 @@ import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { LinearTransition } from 'react-native-reanimated';
+import { Platform } from 'react-native';
 
 const auth = getAuth();
 const db = getFirestore();
@@ -124,7 +125,7 @@ export default function Ingredients() {
 
   const renderItem = ({ item, index }: { item: string; index: number }) => {
     return (
-      <Box key={index} className="w-full bg-white rounded-lg shadow-md p-4 mb-4">
+      <Box key={index} className={`w-full bg-white rounded-lg ${Platform.OS !== 'ios' ? 'shadow-md' : ''} p-4 mb-4`}>
         <HStack className='w-full justify-between items-center'>
           <Text className="text-gray-800 flex-1">{item}</Text>
           <TouchableOpacity
@@ -137,6 +138,7 @@ export default function Ingredients() {
       </Box>
     );
   };
+
 
   return (
     <SafeAreaView className="flex-1 bg-background">

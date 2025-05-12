@@ -1,7 +1,7 @@
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react";
-import { FlatList, SafeAreaView, ScrollView, TouchableOpacity, View } from "react-native";
+import { FlatList, ScrollView, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/ui/text";
 import CustomLoader from "@/components/Loader";
 import { VStack } from "@/components/ui/vstack";
@@ -13,6 +13,7 @@ import { ArrowLeftIcon } from "@/components/ui/icon";
 import { Fab, FabIcon, FabLabel } from "@/components/ui/fab";
 import { HomeIcon } from "lucide-react-native";
 import { RefreshType } from "@/contexts/refresh_context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const db = getFirestore();
 
@@ -109,7 +110,8 @@ export default function RecipePage() {
                     <ScrollView
                         className="flex-1"
                         contentContainerStyle={{
-                            padding: 16,
+                            paddingTop: 16,
+                            paddingHorizontal: 16,
                             paddingBottom: 100,
                         }}
                         showsVerticalScrollIndicator={false}

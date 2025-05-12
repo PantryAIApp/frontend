@@ -211,18 +211,18 @@ export default function HomeScreen() {
             </Center>
           )}
         </ScrollView>
+         <Fab
+          size="md"
+          placement="bottom right"
+          isHovered={false}
+          isDisabled={false}
+          isPressed={false}
+          onPress={() => router.push('/camera')}
+        >
+          <FabIcon as={AddIcon} />
+          <FabLabel>Add Recipe</FabLabel>
+        </Fab>
       </VStack>
-      <Fab
-        size="md"
-        placement="bottom right"
-        isHovered={false}
-        isDisabled={false}
-        isPressed={false}
-        onPress={() => router.push('/camera')}
-      >
-        <FabIcon as={AddIcon} />
-        <FabLabel>Add Recipe</FabLabel>
-      </Fab>
       <Loader visible={loading} />
     </SafeAreaView>
   );
