@@ -2,7 +2,7 @@ import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { getAuth } from "firebase/auth";
 import { TouchableOpacity, View } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Loader from "@/components/Loader";
 import { router } from "expo-router";
@@ -207,12 +207,12 @@ export default function Camera() {
     }
     if (!permission.granted) {
         return (
-            <View className="flex-1 justify-center items-center">
+            <SafeAreaView className="flex-1 justify-center items-center">
                 <Text>Camera permissions are required to use this feature</Text>
                 <Button onPress={requestPermission} className="mt-4" variant="solid" size="md" action="primary">
                     <ButtonText>Grant Permissions</ButtonText>
                 </Button>
-            </View>
+            </SafeAreaView>
         );
     }
 
