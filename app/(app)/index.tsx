@@ -89,7 +89,9 @@ export default function HomeScreen() {
           id: doc.id,
           name: doc.data().name || 'Recipe Details',
           summary: doc.data().summary || "",
-          createdAt: doc.data().createdAt || new Date(),
+          createdAt: doc.data().createdAt ? 
+            (doc.data().createdAt.toDate ? doc.data().createdAt.toDate() : doc.data().createdAt) : 
+            new Date(),
         });
       });
       recipesArray.sort((a, b) => {
@@ -97,7 +99,7 @@ export default function HomeScreen() {
         else if (a.createdAt == b.createdAt) { return 0; }
         else { return -1; }
       }); // reverse order
-      console.log(recipesArray);
+      // console.log(recipesArray);
       setRecipes(recipesArray);
     }
     catch (error) {
@@ -200,7 +202,6 @@ export default function HomeScreen() {
               <Box className="w-full bg-white rounded-lg shadow-md p-4 mb-4">
                 <VStack space="md" className="mb-8">
                   <Text className="text-lg font-bold">{recipe.name}</Text>
-                  <Text className="text-gray-600">Summary:</Text>
                   <Text className="text-gray-800">{recipe.summary}</Text>
                 </VStack>
               </Box>
@@ -211,18 +212,18 @@ export default function HomeScreen() {
             </Center>
           )}
         </ScrollView>
+         <Fab
+          size="md"
+          placement="bottom right"
+          isHovered={false}
+          isDisabled={false}
+          isPressed={false}
+          onPress={() => router.push('/camera')}
+        >
+          <FabIcon as={AddIcon} />
+          <FabLabel>Add Recipe</FabLabel>
+        </Fab>
       </VStack>
-      <Fab
-        size="md"
-        placement="bottom right"
-        isHovered={false}
-        isDisabled={false}
-        isPressed={false}
-        onPress={() => router.push('/camera')}
-      >
-        <FabIcon as={AddIcon} />
-        <FabLabel>Add Recipe</FabLabel>
-      </Fab>
       <Loader visible={loading} />
     </SafeAreaView>
   );

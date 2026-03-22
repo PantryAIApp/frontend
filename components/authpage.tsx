@@ -161,7 +161,7 @@ export default function AuthPage({ signIn, router }: { signIn: boolean, router: 
 
                     <Center className="mt-8 mb-4">
                         <HStack space="xs">
-                            <TouchableOpacity onPress={() => router.push(signIn ? "/signup" : "/signin")}>
+                            <TouchableOpacity onPress={() => router.replace(signIn ? "/signup" : "/signin")}>
                                 <Text className="text-blue-600 font-semibold">{signIn ? "Create Account" : "Sign In"}</Text>
                             </TouchableOpacity>
                         </HStack>

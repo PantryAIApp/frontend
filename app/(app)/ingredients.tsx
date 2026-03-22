@@ -16,6 +16,10 @@ import { HStack } from '@/components/ui/hstack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { LinearTransition } from 'react-native-reanimated';
+import { Platform } from 'react-native';
+import { useRecipe } from '@/hooks/useRecipe';
+import showNewToast from '@/components/ToastWrapper';
+import { useToast } from '@/components/ui/toast';
 
 const auth = getAuth();
 const db = getFirestore();
@@ -24,9 +28,11 @@ const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
 
 
+
 export default function Ingredients() {
+  const toast = useToast();
   const { ingredients } = useLocalSearchParams();
-  const [loading, setLoading] = useState(false);
+  const { loading, generateRecipe } = useRecipe((message)=>showNewToast(toast,'Error',message,'error'));
 
 
   let parsedIngredients: string[] = [];
@@ -42,58 +48,10 @@ export default function Ingredients() {
 
   const getRecipeAndId = async (ingredients: string[]) => {
 
-    if (!auth.currentUser) {
-      alert("Please sign in again to use this feature.");
-      return;
+    const id = await generateRecipe(ingredients);
+    if (id) {
+    router.push({ pathname: '/recipepage', params: { recipeId: id, ingredientsFromPage: ingredients } });
     }
-    setLoading(true);
-    let res: AxiosResponse;
-    try {
-      res = await axios.post(`${apiUrl}/generate-recipe`, {
-        ingredients: ingredients,
-      },
-        {
-          headers: {
-            Authorization: `Bearer ${await auth.currentUser.getIdToken()}`,
-          }
-        });
-    } catch (err: any) {
-      alert("Server error: " + err.message + ". Please try again.");
-      console.log(err.cause, err.message, err.response?.data);
-      setLoading(false);
-      return;
-    }
-    console.log("Success!", res.data);
-    if (!('ingredients' in res.data) || !('steps' in res.data) || !('summary' in res.data) || !('name' in res.data)) {
-      alert("Please try again. No recipe found.");
-      setLoading(false);
-      return;
-    }
-    const out = await addDoc(collection(db, "recipes"), {
-      "ingredients": res.data.ingredients,
-      "steps": res.data.steps,
-      "summary": res.data.summary,
-      "name": res.data.name,
-      "user": auth.currentUser!.uid,
-      "createdAt": new Date(),
-    })
-      .catch(err => {
-        alert("Error saving recipe. Please try again.");
-        console.log(err.message);
-        setLoading(false);
-        return;
-      });
-    if (!out) {
-      alert("Error saving recipe. Please try again.");
-      setLoading(false);
-      return;
-    }
-    console.log("Recipe saved to database!", out, out.id);
-    setLoading(false);
-    router.push({
-      pathname: '/recipepage',
-      params: { recipeId: out.id },
-    });
     // go to next screen
     // router.push({
     //     pathname: '/recipe',
@@ -124,7 +82,7 @@ export default function Ingredients() {
 
   const renderItem = ({ item, index }: { item: string; index: number }) => {
     return (
-      <Box key={index} className="w-full bg-white rounded-lg shadow-md p-4 mb-4">
+      <Box key={index} className={`w-full bg-white rounded-lg ${Platform.OS !== 'ios' ? 'shadow-md' : ''} p-4 mb-4`}>
         <HStack className='w-full justify-between items-center'>
           <Text className="text-gray-800 flex-1">{item}</Text>
           <TouchableOpacity
@@ -137,6 +95,7 @@ export default function Ingredients() {
       </Box>
     );
   };
+
 
   return (
     <SafeAreaView className="flex-1 bg-background">

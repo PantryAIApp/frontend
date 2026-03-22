@@ -139,6 +139,8 @@ type IMenuProps = React.ComponentProps<typeof UIMenu> &
 type IMenuItemLabelProps = React.ComponentProps<typeof UIMenu.ItemLabel> &
   VariantProps<typeof menuItemLabelStyle> & { className?: string };
 
+// Menu UI fix from https://github.com/gluestack/gluestack-ui/issues/2613#issuecomment-2606537026
+
 const Menu = React.forwardRef<React.ComponentRef<typeof UIMenu>, IMenuProps>(
   function Menu({ className, ...props }, ref) {
     return (
@@ -146,7 +148,7 @@ const Menu = React.forwardRef<React.ComponentRef<typeof UIMenu>, IMenuProps>(
         ref={ref}
         initial={{
           opacity: 0,
-          scale: 0.8,
+          scale: 1,
         }}
         animate={{
           opacity: 1,
